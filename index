@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolución de Imágenes Médicas (Métodos Numéricos)</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; padding: 20px; max-width: 900px; margin: auto; }
+        h1, h2 { color: #2c3e50; }
+        .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .grid-container { display: flex; gap: 20px; align-items: center; justify-content: center; flex-wrap: wrap; }
+        .matrix { display: grid; grid-template-columns: repeat(3, 60px); gap: 10px; background: #eef2f3; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db; border-right: 4px solid #3498db; }
+        .vector { display: grid; grid-template-columns: 60px; gap: 10px; background: #eef2f3; padding: 15px; border-radius: 8px; border-left: 4px solid #e74c3c; border-right: 4px solid #e74c3c; }
+        input[type="number"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 16px; }
+        .button-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+        button { background-color: #3498db; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: background 0.3s; }
+        button:hover { background-color: #2980b9; }
+        .btn-lu { background-color: #9b59b6; }
+        .btn-lu:hover { background-color: #8e44ad; }
+        #output { background: #2c3e50; color: #ecf0f1; padding: 20px; border-radius: 8px; white-space: pre-wrap; font-family: monospace; overflow-x: auto; }
+        .interpretation { background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 5px solid #28a745; }
+    </style>
+</head>
+<body>
+
+    <h1>Reconstrucción de Tomografía (3x3)</h1>
+    
+    <div class="card">
+        <h2>Contexto Clínico</h2>
+        <p>Configura el sistema de ecuaciones. <strong>Matriz A</strong> representa el recorrido de los rayos X. <strong>Vector B</strong> es la absorción total medida por el sensor. El sistema resolverá la densidad de 3 tejidos (x1, x2, x3).</p>
+        <p><em>Nota: Por defecto, la matriz es simétrica y diagonalmente dominante para garantizar que todos los métodos funcionen a la primera.</em></p>
+        
+        <div class="grid-container">
+            <div style="text-align: center;">
+                <h3>Matriz A (Recorrido)</h3>
+                <div class="matrix" id="matrixA">
+                    <input type="number" id="a00" value="4"><input type="number" id="a01" value="1"><input type="number" id="a02" value="1">
+                    <input type="number" id="a10" value="1"><input type="number" id="a11" value="4"><input type="number" id="a12" value="1">
+                    <input type="number" id="a20" value="1"><input type="number" id="a21" value="1"><input type="number" id="a22" value="4">
+                </div>
+            </div>
+            
+            <div style="font-size: 24px;"> × [x1, x2, x3] = </div>
+            
+            <div style="text-align: center;">
+                <h3>Vector B (Medición)</h3>
+                <div class="vector" id="vectorB">
+                    <input type="number" id="b0" value="6">
+                    <input type="number" id="b1" value="6">
+                    <input type="number" id="b2" value="6">
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button onclick="solve('jacobi')">Iterativo: Jacobi</button>
+            <button onclick="solve('seidel')">Iterativo: Gauss-Seidel</button>
+            <button class="btn-lu" onclick="solve('doolittle')">Directo: LU (Doolittle)</button>
+            <button class="btn-lu" onclick="solve('crout')">Directo: LU (Crout)</button>
+            <button class="btn-lu" onclick="solve('cholesky')">Directo: LU (Cholesky)</button>
+        </div>
+    </div>
+
+    <div id="outputContainer" style="display: none;">
+        <h2>Resultados Matemáticos</h2>
+        <div id="output"></div>
+        <div class="interpretation" id="interpretation"></div>
+    </div>
+
+<script>
+    function getSystem() {
+        let A = [
+            [parseFloat(document.getElementById('a00').value), parseFloat(document.getElementById('a01').value), parseFloat(document.getElementById('a02').value)],
+            [parseFloat(document.getElementById('a10').value), parseFloat(document.getElementById('a11').value), parseFloat(document.getElementById('a12').value)],
+            [parseFloat(document.getElementById('a20').value), parseFloat(document.getElementById('a21').value), parseFloat(document.getElementById('a22').value)]
+        ];
+        let B = [
+            parseFloat(document.getElementById('b0').value),
+            parseFloat(document.getElementById('b1').value),
+            parseFloat(document.getElementById('b2').value)
+        ];
+        return { A, B };
+    }
+
+    function printMatrix(matrix, name) {
+        let str = name + " = \n";
+        for (let i = 0; i < matrix.length; i++) {
+            str += "[ ";
+            for (let j = 0; j < matrix[i].length; j++) {
+                str += matrix[i][j].toFixed(4).padStart(8) + " ";
+            }
+            str += " ]\n";
+        }
+        return str + "\n";
+    }
+
+    function generateInterpretation(x) {
+        let html = "<h3>¿Qué implican estos resultados en la vida real?</h3>";
+        html += "<ul>";
+        let tissues = ["Región 1 (Hueso potencial)", "Región 2 (Músculo potencial)", "Región 3 (Grasa potencial)"];
+        
+        for(let i=0; i<3; i++) {
+            let density = x[i];
+            let diagnosis = "";
+            if(density > 1.5) diagnosis = "Alta densidad. Probablemente tejido óseo o calcificación.";
+            else if(density > 0.5) diagnosis = "Densidad media. Probablemente tejido muscular u órganos blandos.";
+            else if(density >= 0) diagnosis = "Baja densidad. Probablemente tejido adiposo (grasa) o aire.";
+            else diagnosis = "Error físico: Densidad negativa (Revisa tus datos de entrada).";
+
+            html += `<li><strong>x${i+1} = ${density.toFixed(4)}</strong>: ${diagnosis}</li>`;
+        }
+        html += "</ul>";
+        html += "<p><em>El software de la máquina toma estos números y los convierte en píxeles: blanco brillante para alta densidad, gris para media, y negro para baja. ¡Así se forma la imagen!</em></p>";
+        document.getElementById('interpretation').innerHTML = html;
+    }
+
+    function solve(method) {
+        document.getElementById('outputContainer').style.display = 'block';
+        let { A, B } = getSystem();
+        let log = `Iniciando método: ${method.toUpperCase()}\n\n`;
+        let x = [0, 0, 0];
+        
+        try {
+            if (method === 'jacobi' || method === 'seidel') {
+                let maxIter = 50;
+                let tol = 1e-6;
+                let xNew = [0, 0, 0];
+                
+                for (let k = 1; k <= maxIter; k++) {
+                    let maxDiff = 0;
+                    for (let i = 0; i < 3; i++) {
+                        let sum = 0;
+                        for (let j = 0; j < 3; j++) {
+                            if (i !== j) {
+                                sum += A[i][j] * (method === 'seidel' ? xNew[j] : x[j]);
+                            }
+                        }
+                        let nextVal = (B[i] - sum) / A[i][i];
+                        maxDiff = Math.max(maxDiff, Math.abs(nextVal - x[i]));
+                        xNew[i] = nextVal;
+                    }
+                    x = [...xNew];
+                    log += `Iteración ${k}: x = [${x[0].toFixed(4)}, ${x[1].toFixed(4)}, ${x[2].toFixed(4)}]\n`;
+                    if (maxDiff < tol) {
+                        log += `\nConvergencia alcanzada en la iteración ${k}.\n`;
+                        break;
+                    }
+                    if (k === maxIter) log += `\nAdvertencia: No convergió después de ${maxIter} iteraciones. La matriz podría no ser diagonalmente dominante.\n`;
+                }
+            } 
+            else if (method === 'doolittle' || method === 'crout' || method === 'cholesky') {
+                let L = [[0,0,0],[0,0,0],[0,0,0]];
+                let U = [[0,0,0],[0,0,0],[0,0,0]];
+
+                if (method === 'doolittle') {
+                    for (let i = 0; i < 3; i++) L[i][i] = 1; // Diagonal de L es 1
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j < 3; j++) {
+                            if (i <= j) { // U
+                                U[i][j] = A[i][j];
+                                for (let k = 0; k < i; k++) U[i][j] -= L[i][k] * U[k][j];
+                            } else { // L
+                                L[i][j] = A[i][j];
+                                for (let k = 0; k < j; k++) L[i][j] -= L[i][k] * U[k][j];
+                                L[i][j] /= U[j][j];
+                            }
+                        }
+                    }
+                } 
+                else if (method === 'crout') {
+                    for (let i = 0; i < 3; i++) U[i][i] = 1; // Diagonal de U es 1
+                    for (let j = 0; j < 3; j++) {
+                        for (let i = 0; i < 3; i++) {
+                            if (i >= j) { // L
+                                L[i][j] = A[i][j];
+                                for (let k = 0; k < j; k++) L[i][j] -= L[i][k] * U[k][j];
+                            } else { // U
+                                U[i][j] = A[i][j];
+                                for (let k = 0; k < i; k++) U[i][j] -= L[i][k] * U[k][j];
+                                U[i][j] /= L[i][i];
+                            }
+                        }
+                    }
+                }
+                else if (method === 'cholesky') {
+                    // Verificación básica de simetría
+                    for(let i=0; i<3; i++) {
+                        for(let j=0; j<3; j++) {
+                            if(A[i][j] !== A[j][i]) throw new Error("Cholesky requiere una matriz SIMÉTRICA (A[i][j] == A[j][i]). Modifica los datos.");
+                        }
+                    }
+                    
+                    for (let i = 0; i < 3; i++) {
+                        for (let j = 0; j <= i; j++) {
+                            let sum = 0;
+                            for (let k = 0; k < j; k++) sum += L[i][k] * L[j][k];
+                            
+                            if (i === j) {
+                                let val = A[i][i] - sum;
+                                if (val <= 0) throw new Error("La matriz no es definida positiva. Cholesky requiere raíces cuadradas de números positivos.");
+                                L[i][j] = Math.sqrt(val);
+                                U[i][j] = L[i][j]; // En Cholesky U es L transpuesta
+                            } else {
+                                L[i][j] = (A[i][j] - sum) / L[j][j];
+                                U[j][i] = L[i][j];
+                            }
+                        }
+                    }
+                }
+
+                log += printMatrix(L, "Matriz L (Lower)");
+                log += printMatrix(U, "Matriz U (Upper)");
+
+                // Resolver L * y = B (Sustitución hacia adelante)
+                let y = [0, 0, 0];
+                for (let i = 0; i < 3; i++) {
+                    let sum = 0;
+                    for (let k = 0; k < i; k++) sum += L[i][k] * y[k];
+                    y[i] = (B[i] - sum) / L[i][i];
+                }
+                log += `Vector y (intermedio) = [${y[0].toFixed(4)}, ${y[1].toFixed(4)}, ${y[2].toFixed(4)}]\n\n`;
+
+                // Resolver U * x = y (Sustitución hacia atrás)
+                for (let i = 2; i >= 0; i--) {
+                    let sum = 0;
+                    for (let k = i + 1; k < 3; k++) sum += U[i][k] * x[k];
+                    x[i] = (y[i] - sum) / U[i][i];
+                }
+                log += `Solución final:\nx1 = ${x[0].toFixed(4)}\nx2 = ${x[1].toFixed(4)}\nx3 = ${x[2].toFixed(4)}\n`;
+            }
+
+            document.getElementById('output').textContent = log;
+            generateInterpretation(x);
+
+        } catch (error) {
+            document.getElementById('output').textContent = `ERROR: ${error.message}`;
+            document.getElementById('interpretation').innerHTML = `<p style="color:red">Ocurrió un error matemático con los datos ingresados. Revisa la consola arriba.</p>`;
+        }
+    }
+</script>
+</body>
+</html>
