@@ -20,13 +20,18 @@
         .tutorial-card h3 { margin-top: 0; color: var(--primary); font-size: 20px; }
         .highlight { background: #ffe0e0; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: var(--accent); }
         
+        /* Panel específico de Variables Físicas (NUEVO) */
+        .variables-panel { background: #e3f2fd; border-left: 5px solid #1976d2; padding: 15px 20px; border-radius: 5px; margin-bottom: 25px; font-size: 15px; }
+        .variables-panel ul { margin: 10px 0 0 0; padding-left: 20px; }
+        .variables-panel li { margin-bottom: 8px; }
+
         /* Estilos de la Consola del Hospital */
         .dashboard { background: white; border: 2px solid #e0e0e0; border-radius: 12px; overflow: hidden; }
         .dashboard-header { background: #e0e0e0; padding: 15px 20px; font-weight: bold; font-family: monospace; color: #555; display: flex; justify-content: space-between; align-items: center; }
         
         /* Selector de Casos */
-        .case-selector { background: var(--light); padding: 20px; border-bottom: 2px solid #e0e0e0; display: flex; align-items: center; gap: 15px; }
-        .case-selector select { padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; flex-grow: 1; cursor: pointer; }
+        .case-selector { background: var(--light); padding: 20px; border-bottom: 2px solid #e0e0e0; display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .case-selector select { padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; flex-grow: 1; cursor: pointer; min-width: 300px; }
         .case-selector span { font-weight: bold; color: var(--primary); }
 
         .calculator-area { padding: 30px; }
@@ -77,7 +82,7 @@
             <h3>¿Qué almacena cada variable?</h3>
             <p>Imagina que esto es un juego de detectives:</p>
             <ul>
-                <li><span class="highlight">Las Incógnitas (x₁, x₂, x₃):</span> Es <strong>el secreto</strong>. Representan la densidad real de tus tejidos (hueso, músculo, grasa). Es lo que la máquina quiere descubrir.</li>
+                <li><span class="highlight">Las Incógnitas (x₁, x₂, x₃):</span> Es <strong>el secreto</strong>. Representan la densidad real de tus tejidos. Es lo que la máquina quiere descubrir.</li>
                 <li><span class="highlight">Matriz A (Los Rayos):</span> Son <strong>las pistas</strong>. Cada número es la distancia que el rayo X viajó a través de tu cuerpo desde un ángulo específico.</li>
                 <li><span class="highlight">Vector B (Sensores):</span> Es <strong>la evidencia</strong>. Es el número final de radiación que el sensor detectó al otro lado de tu cuerpo.</li>
             </ul>
@@ -99,23 +104,36 @@
             <span>📚 Casos de Estudio:</span>
             <select id="scenario" onchange="loadScenario()">
                 <option value="ideal">Caso 1: Escaneo Perfecto (Paciente ideal, todos los métodos funcionan)</option>
-                <option value="asim">Caso 2: Escaneo Asimétrico (Cholesky falla, los demás triunfan)</option>
-                <option value="ruido">Caso 3: Artefacto de Movimiento (Valle Plano / Colapso LU, requiere Inteligencia Artificial)</option>
+                <option value="asim">Caso 2: Escaneo Asimétrico (Cholesky falla por simetría, los demás triunfan)</option>
+                <option value="ruido">Caso 3: Artefacto de Movimiento (Valle Plano, colapso matemático, requiere IA)</option>
+                <option value="oseo" style="font-weight: bold; color: #1976d2;">Caso 4: Paciente con Alta Densidad Ósea (Demostración de variables X)</option>
+                <option value="pulmon" style="font-weight: bold; color: #1976d2;">Caso 5: Escaneo Pulmonar / Aire (Demostración de baja densidad)</option>
+                <option value="implante" style="font-weight: bold; color: #1976d2;">Caso 6: Anomalía por Implante Metálico (Densidad extrema en X1)</option>
             </select>
         </div>
 
         <div class="calculator-area">
-            <p style="text-align: center; color: #666; margin-top: 0;" id="case-description">
+            <p style="text-align: justify; color: #444; margin-top: 0; background: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; border-radius: 4px;" id="case-description">
                 <em>Cargando descripción del caso...</em>
             </p>
+
+            <div class="variables-panel">
+                <strong>Traducción Física del Sistema de Ecuaciones:</strong>
+                <ul>
+                    <li><strong>x₁</strong> = Densidad de la <em>Región Izquierda</em> (ej. Costilla).</li>
+                    <li><strong>x₂</strong> = Densidad de la <em>Región Central</em> (ej. Corazón / Músculo).</li>
+                    <li><strong>x₃</strong> = Densidad de la <em>Región Derecha</em> (ej. Pulmón / Aire).</li>
+                    <li><strong>Vector b (Resultado)</strong> = "Si el Rayo 1 atraviesa la región izquierda, luego la central y luego la derecha, el vector 'b' almacena la suma total de energía que absorbió el cuerpo en ese viaje."</li>
+                </ul>
+            </div>
 
             <div class="grid-container">
                 <div class="matrix-box">
                     <h4>Matriz A (Recorrido / Pistas)</h4>
                     <div class="matrix" id="matrixA">
-                        <input type="number" id="a00"><input type="number" id="a01"><input type="number" id="a02">
-                        <input type="number" id="a10"><input type="number" id="a11"><input type="number" id="a12">
-                        <input type="number" id="a20"><input type="number" id="a21"><input type="number" id="a22">
+                        <input type="number" step="0.1" id="a00"><input type="number" step="0.1" id="a01"><input type="number" step="0.1" id="a02">
+                        <input type="number" step="0.1" id="a10"><input type="number" step="0.1" id="a11"><input type="number" step="0.1" id="a12">
+                        <input type="number" step="0.1" id="a20"><input type="number" step="0.1" id="a21"><input type="number" step="0.1" id="a22">
                     </div>
                 </div>
                 
@@ -124,7 +142,7 @@
                 <div class="matrix-box" style="display: flex; align-items: center;">
                     <div style="text-align: center;">
                         <h4 style="margin-bottom: 30px;">(x₁, x₂, x₃)</h4>
-                        <div style="color: #888; font-style: italic;">Incógnitas<br>(Lo que buscamos)</div>
+                        <div style="color: #888; font-style: italic;">Densidades<br>(Lo que buscamos)</div>
                     </div>
                 </div>
 
@@ -133,9 +151,9 @@
                 <div class="matrix-box">
                     <h4>Vector B (Sensores / Evidencia)</h4>
                     <div class="vector" id="vectorB">
-                        <input type="number" id="b0">
-                        <input type="number" id="b1">
-                        <input type="number" id="b2">
+                        <input type="number" step="0.1" id="b0">
+                        <input type="number" step="0.1" id="b1">
+                        <input type="number" step="0.1" id="b2">
                     </div>
                 </div>
             </div>
@@ -146,6 +164,7 @@
                     <button class="btn-iterative" onclick="solve('jacobi')">Jacobi</button>
                     <button class="btn-iterative" onclick="solve('seidel')">Gauss-Seidel</button>
                     <button class="btn-direct" onclick="solve('doolittle')">LU: Doolittle</button>
+                    <button class="btn-direct" onclick="solve('crout')">LU: Crout</button>
                     <button class="btn-direct" onclick="solve('cholesky')">LU: Cholesky</button>
                     <button class="btn-ai" onclick="solve('gradiente')">IA: Descenso de Gradiente</button>
                 </div>
@@ -164,22 +183,31 @@
 </div>
 
 <script>
-    // --- Lógica de Casos de Estudio ---
+    // --- Lógica de Casos de Estudio (Nuevos casos añadidos) ---
     const scenarios = {
         ideal: {
             desc: "El paciente se quedó completamente quieto. La matriz es simétrica y perfecta. Podrás ver en el gráfico 3D cómo los tres planos se cruzan limpiamente en un solo punto exacto. ¡Todos los métodos funcionarán a la perfección!",
-            A: [[4, 1, 1], [1, 4, 1], [1, 1, 4]],
-            B: [6, 6, 6]
+            A: [[4, 1, 1], [1, 4, 1], [1, 1, 4]], B: [6, 6, 6]
         },
         asim: {
-            desc: "Los rayos X tomaron rutas asimétricas debido a la postura del paciente. Métodos iterativos (Jacobi) y directos (Doolittle) encontrarán la solución, pero nota cómo LU Cholesky lanza un error crítico porque exige simetría perfecta física.",
-            A: [[3, 2, 1], [1, 4, 2], [2, 1, 5]],
-            B: [6, 7, 8]
+            desc: "Los rayos X tomaron rutas asimétricas debido a la postura del paciente. Métodos iterativos y directos (Doolittle/Crout) encontrarán la solución, pero nota cómo LU Cholesky lanza un error crítico porque exige simetría perfecta.",
+            A: [[3, 2, 1], [1, 4, 2], [2, 1, 5]], B: [6, 7, 8]
         },
         ruido: {
-            desc: "🚨 EL PACIENTE TOSIÓ. Los datos del sensor se corrompieron. La matriz es 'Singular' (una fila es copia de otra, creando un 'Valle Plano' sin intersección única). Los métodos clásicos fallarán dividiendo por cero. Solo la Inteligencia Artificial (Descenso de Gradiente) podrá navegar el ruido para deducir la imagen.",
-            A: [[1, 1, 1], [2, 2, 2], [1, 0, 1]],
-            B: [3, 6, 2]
+            desc: "🚨 EL PACIENTE TOSIÓ. Los datos del sensor se corrompieron. La matriz es 'Singular' (una fila es copia de otra, creando un 'Valle Plano' sin intersección). Los métodos clásicos (LU, Jacobi) fallarán porque intentan dividir por cero. Solo la Inteligencia Artificial (Descenso de Gradiente) podrá navegar el ruido.",
+            A: [[1, 1, 1], [2, 2, 2], [1, 0, 1]], B: [3, 6, 2]
+        },
+        oseo: {
+            desc: "🦴 <strong>Caso de Tejido Óseo:</strong> Observa el Vector B (sensores), los valores son altos porque el cuerpo absorbió mucha radiación. Al resolver el sistema, verás que las incógnitas x₁ y x₃ (Región Izquierda y Derecha) darán resultados altos, indicando presencia de hueso.",
+            A: [[2, 1, 1], [1, 3, 1], [1, 1, 2]], B: [6.5, 6.5, 6.0]
+        },
+        pulmon: {
+            desc: "🫁 <strong>Caso Pulmonar (Aire):</strong> El Vector B tiene valores muy bajos (0.5, 0.7, 0.3). La radiación pasó casi sin resistencia. Al resolver, nota cómo las variables (x₁, x₂, x₃) se acercan a cero, indicando tejido vacío o aire en los pulmones.",
+            A: [[3, 1, 1], [1, 3, 1], [1, 1, 3]], B: [0.5, 0.7, 0.3]
+        },
+        implante: {
+            desc: "⚙️ <strong>Anomalía Metálica:</strong> El paciente tiene un implante de titanio en la Región Izquierda. Fíjate cómo el primer valor del Vector B (20.7) es gigantesco en comparación al resto. Al resolver, la variable x₁ explotará a un número altísimo (Densidad = 5.0), detectando el metal.",
+            A: [[4, 1, 1], [1, 4, 1], [1, 1, 4]], B: [20.7, 7.2, 6.3]
         }
     };
 
@@ -187,7 +215,7 @@
         const val = document.getElementById('scenario').value;
         const data = scenarios[val];
         
-        document.getElementById('case-description').innerHTML = `<strong>Contexto:</strong> ${data.desc}`;
+        document.getElementById('case-description').innerHTML = `<strong>Contexto de la Simulación:</strong> ${data.desc}`;
         
         // Rellenar Matriz A
         document.getElementById('a00').value = data.A[0][0]; document.getElementById('a01').value = data.A[0][1]; document.getElementById('a02').value = data.A[0][2];
@@ -195,15 +223,12 @@
         document.getElementById('a20').value = data.A[2][0]; document.getElementById('a21').value = data.A[2][1]; document.getElementById('a22').value = data.A[2][2];
         
         // Rellenar Vector B
-        document.getElementById('b0').value = data.B[0];
-        document.getElementById('b1').value = data.B[1];
-        document.getElementById('b2').value = data.B[2];
+        document.getElementById('b0').value = data.B[0]; document.getElementById('b1').value = data.B[1]; document.getElementById('b2').value = data.B[2];
 
         // Ocultar resultados previos
         document.getElementById('resultsArea').style.display = 'none';
     }
 
-    // Cargar el caso inicial al abrir la página
     window.onload = loadScenario;
 
     function getSystem() {
@@ -214,25 +239,24 @@
                 [parseFloat(document.getElementById('a20').value), parseFloat(document.getElementById('a21').value), parseFloat(document.getElementById('a22').value)]
             ],
             B: [
-                parseFloat(document.getElementById('b0').value),
-                parseFloat(document.getElementById('b1').value),
-                parseFloat(document.getElementById('b2').value)
+                parseFloat(document.getElementById('b0').value), parseFloat(document.getElementById('b1').value), parseFloat(document.getElementById('b2').value)
             ]
         };
     }
 
     function generateDiagnosis(x) {
         let html = "<h4>Diagnóstico Clínico Traducido:</h4><ul>";
-        let tissues = ["Región 1", "Región 2", "Región 3"];
+        let tissues = ["x₁ (Región Izquierda)", "x₂ (Región Central)", "x₃ (Región Derecha)"];
         for(let i=0; i<3; i++) {
             let d = x[i];
             let type = "Desconocido"; let color = "#333";
-            if(d > 1.5) { type = "Hueso / Alta Densidad"; color = "#555"; }
-            else if(d > 0.5) { type = "Músculo / Densidad Media"; color = "#c0392b"; }
-            else if(d >= -0.1) { type = "Grasa-Aire / Baja Densidad"; color = "#f39c12"; }
+            if(d > 3.0) { type = "¡ALERTA! Densidad Extrema (Implante Metálico / Artefacto)"; color = "#8e44ad"; }
+            else if(d > 1.4) { type = "Hueso / Alta Densidad"; color = "#555"; }
+            else if(d > 0.4) { type = "Músculo / Tejido Blando"; color = "#c0392b"; }
+            else if(d >= -0.1) { type = "Grasa - Aire / Baja Densidad"; color = "#f39c12"; }
             else { type = "Error Analítico (Densidad Negativa Imposible)"; color = "red"; }
             
-            html += `<li><strong>${tissues[i]}:</strong> <span>x${i+1} = ${d.toFixed(3)}</span> <strong style="color:${color}">${type}</strong></li>`;
+            html += `<li><strong>${tissues[i]}:</strong> <span>Densidad = ${d.toFixed(3)}</span> <strong style="color:${color}">${type}</strong></li>`;
         }
         html += "</ul>";
         document.getElementById('interpretation').innerHTML = html;
@@ -260,10 +284,10 @@
         
         traces.push({
             x: [solution[0]], y: [solution[1]], z: [solution[2]], mode: 'markers',
-            marker: { size: 12, color: 'black', symbol: 'diamond' }, type: 'scatter3d', name: 'Solución Encontrada'
+            marker: { size: 12, color: 'black', symbol: 'diamond' }, type: 'scatter3d', name: 'Densidad Encontrada'
         });
 
-        const layout = { title: 'Representación Gráfica de los Datos', margin: { l: 0, r: 0, b: 0, t: 40 }, scene: { xaxis: { title: 'x1' }, yaxis: { title: 'x2' }, zaxis: { title: 'x3' } } };
+        const layout = { title: 'Representación Gráfica (Intersección de Rayos)', margin: { l: 0, r: 0, b: 0, t: 40 }, scene: { xaxis: { title: 'x1' }, yaxis: { title: 'x2' }, zaxis: { title: 'x3' } } };
         Plotly.newPlot('plot3d', traces, layout);
     }
 
@@ -306,7 +330,8 @@
                     if (maxChange < 1e-6) { log += `\n[IA] Solución óptima encontrada (Valle superado) en época ${epoch}.\n`; break; }
                 }
             }
-            else if (method === 'doolittle' || method === 'cholesky') {
+            // NUEVO: Integración lógica de los TRES métodos LU (Doolittle, Crout, Cholesky)
+            else if (method === 'doolittle' || method === 'crout' || method === 'cholesky') {
                 let L = [[0,0,0],[0,0,0],[0,0,0]], U = [[0,0,0],[0,0,0],[0,0,0]];
                 
                 if (method === 'doolittle') {
@@ -319,14 +344,31 @@
                             } else {
                                 L[i][j] = A[i][j];
                                 for (let k = 0; k < j; k++) L[i][j] -= L[i][k] * U[k][j];
-                                if(U[j][j] === 0) throw new Error("Pivote nulo. Sistema singular/colapsado (Caso 3). Doolittle falla porque no puede dividir entre cero.");
+                                if(U[j][j] === 0) throw new Error("Pivote nulo en U. Sistema singular/colapsado (Caso 3). Doolittle falla.");
                                 L[i][j] /= U[j][j];
                             }
                         }
                     }
                 } 
+                // NUEVO: Algoritmo de Crout añadido al motor de cálculo
+                else if (method === 'crout') {
+                    for (let i = 0; i < 3; i++) U[i][i] = 1; // Diagonal de U es 1
+                    for (let j = 0; j < 3; j++) {
+                        for (let i = 0; i < 3; i++) {
+                            if (i >= j) { // Matriz L
+                                L[i][j] = A[i][j];
+                                for (let k = 0; k < j; k++) L[i][j] -= L[i][k] * U[k][j];
+                            } else { // Matriz U
+                                U[i][j] = A[i][j];
+                                for (let k = 0; k < i; k++) U[i][j] -= L[i][k] * U[k][j];
+                                if(L[i][i] === 0) throw new Error("Pivote nulo en L. Sistema singular/colapsado (Caso 3). Crout falla.");
+                                U[i][j] /= L[i][i];
+                            }
+                        }
+                    }
+                }
                 else if (method === 'cholesky') {
-                    for(let i=0; i<3; i++) for(let j=0; j<3; j++) if(A[i][j] !== A[j][i]) throw new Error("Fallo de simetría. Cholesky SOLO funciona si la Matriz A es simétrica (como en el Caso 1).");
+                    for(let i=0; i<3; i++) for(let j=0; j<3; j++) if(A[i][j] !== A[j][i]) throw new Error("Fallo de simetría. Cholesky SOLO funciona si la Matriz A es simétrica (como en el Caso 1, 4, 5 o 6).");
                     for (let i = 0; i < 3; i++) {
                         for (let j = 0; j <= i; j++) {
                             let sum = 0; for (let k = 0; k < j; k++) sum += L[i][k] * L[j][k];
@@ -341,6 +383,7 @@
                     }
                 }
                 
+                // Sustitución para los 3 métodos LU
                 let y = [0, 0, 0];
                 for (let i = 0; i < 3; i++) {
                     let sum = 0; for (let k = 0; k < i; k++) sum += L[i][k] * y[k];
@@ -350,7 +393,7 @@
                     let sum = 0; for (let k = i + 1; k < 3; k++) sum += U[i][k] * x[k];
                     x[i] = (y[i] - sum) / U[i][i];
                 }
-                log += `[ÉXITO] Descomposición LU completada sin errores.\n`;
+                log += `[ÉXITO] Descomposición LU (${method}) completada sin errores.\n`;
             }
 
             log += `\nRESULTADO DE DENSIDADES:\nx1 = ${x[0].toFixed(5)}\nx2 = ${x[1].toFixed(5)}\nx3 = ${x[2].toFixed(5)}\n`;
