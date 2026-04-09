@@ -10,7 +10,7 @@
     <style>
         :root { --primary: #1a365d; --secondary: #2b6cb0; --accent: #e53e3e; --light: #ebf8ff; --success: #2f855a; --warning: #d69e2e; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f7fafc; color: #2d3748; margin: 0; padding: 0; line-height: 1.6; }
-        .container { max-width: 1100px; margin: auto; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; padding: 20px; box-sizing: border-box; }
         
         .header-hospital { background: var(--primary); color: white; padding: 30px 20px; border-radius: 12px 12px 0 0; text-align: center; border-bottom: 5px solid var(--secondary); }
         .header-hospital h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
@@ -21,7 +21,7 @@
         .config-panel { background: var(--light); padding: 20px; border-bottom: 1px solid #cbd5e0; display: flex; flex-direction: column; gap: 15px; }
         .selector-group { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .selector-group label { font-weight: bold; color: var(--primary); min-width: 200px; }
-        select, input[type="text"], input[type="date"] { padding: 10px; font-size: 15px; border-radius: 6px; border: 1px solid #a0aec0; flex-grow: 1; background: white; }
+        select, input[type="text"], input[type="date"] { padding: 10px; font-size: 15px; border-radius: 6px; border: 1px solid #a0aec0; flex-grow: 1; background: white; width: 100%; box-sizing: border-box; }
 
         .patient-data { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; background: white; padding: 15px; border-radius: 8px; border: 1px dashed #a0aec0; }
 
@@ -50,7 +50,7 @@
         .btn-pdf { background-color: var(--success); color: white; font-size: 16px; width: 100%; margin-top: 20px; padding: 15px;}
         
         .results-section { display: none; padding: 30px; background: #e2e8f0;}
-        .console-container { background: #1a202c; color: #48bb78; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; white-space: pre-wrap; overflow-x: auto; font-size: 13px; border-left: 4px solid var(--success); margin-bottom: 20px; }
+        .console-container { background: #1a202c; color: #48bb78; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; white-space: pre-wrap; overflow-x: auto; font-size: 13px; border-left: 4px solid var(--success); margin-bottom: 20px; word-wrap: break-word;}
         
         /* ESTILOS DEL INFORME PDF */
         #medicalReport { background: white; padding: 40px; margin: auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); color: black; max-width: 800px; font-family: 'Helvetica', 'Arial', sans-serif;}
@@ -60,7 +60,7 @@
         .pdf-patient-info { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 30px; background: #f9f9f9; padding: 15px; border: 1px solid #ddd; }
         .pdf-section-title { background: #eee; padding: 8px; font-weight: bold; border-left: 4px solid #333; margin-top: 20px; margin-bottom: 15px;}
         
-        .pdf-math-data { display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; font-family: monospace; font-size: 16px;}
+        .pdf-math-data { display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; font-family: monospace; font-size: 16px; flex-wrap: wrap;}
         .pdf-matrix-table { border-collapse: collapse; }
         .pdf-matrix-table td { padding: 8px 15px; text-align: center; }
         .pdf-bracket { font-size: 40px; font-weight: light; color: #333; }
@@ -69,8 +69,39 @@
         .sector-card:last-child { border-bottom: none; }
         #plot3d { width: 100%; height: 400px; margin-bottom: 20px;}
         
-        .pdf-signatures { display: flex; justify-content: space-around; margin-top: 60px; text-align: center; }
-        .pdf-signature-line { border-top: 1px solid black; width: 250px; padding-top: 10px; margin: auto; }
+        .pdf-signatures { display: flex; justify-content: space-around; margin-top: 60px; text-align: center; flex-wrap: wrap; gap: 20px;}
+        .pdf-signature-line { border-top: 1px solid black; width: 250px; padding-top: 10px; margin: auto; max-width: 100%;}
+
+        /* --- NUEVO: MEDIA QUERIES PARA RESPONSIVIDAD (MÓVILES Y TABLETS) --- */
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .header-hospital h1 { font-size: 20px; }
+            .header-hospital p { font-size: 11px; }
+            .calculator-area, .results-section { padding: 15px; }
+            
+            /* Ajuste de Selectores para móvil */
+            .selector-group label { min-width: 100%; margin-bottom: 5px;}
+            .patient-data { grid-template-columns: 1fr; }
+            
+            /* Ajuste de Matrices para no desbordar pantallas pequeñas */
+            .grid-container { flex-direction: column; gap: 15px; }
+            .matrix { grid-template-columns: repeat(3, 50px); padding: 15px 10px; gap: 5px; }
+            .vector { grid-template-columns: 50px; padding: 15px 10px; }
+            .matrix::before, .matrix::after, .vector::before, .vector::after { font-size: 60px; top: -5px; }
+            .matrix::before, .vector::before { left: -8px; }
+            .matrix::after, .vector::after { right: -8px; left: auto; }
+            input[type="number"] { font-size: 14px; padding: 8px 2px; }
+            
+            /* Ajuste de Botones */
+            .btn-group button { width: 100%; font-size: 14px; padding: 15px; }
+            
+            /* Ajuste del Reporte PDF en vista previa */
+            #medicalReport { padding: 20px; }
+            .pdf-header h2 { font-size: 18px; }
+            .pdf-patient-info { grid-template-columns: 1fr; }
+            .pdf-math-data { flex-direction: column; gap: 20px; text-align: center; }
+            .pdf-signatures { flex-direction: column; gap: 40px; margin-top: 40px; }
+        }
     </style>
 </head>
 <body>
@@ -165,7 +196,7 @@
         </div>
 
         <div id="resultsArea" class="results-section">
-            <h3 style="color: white; margin-top: 0;">Consola del Sistema</h3>
+            <h3 style="color: #2d3748; margin-top: 0;">Consola del Sistema</h3>
             <div class="console-container" id="output"></div>
             
             <button class="btn-pdf" onclick="downloadPDF()">⬇️ DESCARGAR INFORME MÉDICO EN PDF</button>
@@ -182,7 +213,7 @@
                         <div><strong>Nro. Historia / CI:</strong> <span id="pdf-patID"></span></div>
                         <div><strong>Fecha de Estudio:</strong> <span id="pdf-patDate"></span></div>
                         <div><strong>Región Escaneada:</strong> <span id="pdf-anatomy"></span></div>
-                        <div style="grid-column: span 2;"><strong>Médico Radiólogo:</strong> Dr. Giann Kalef Ledezma Ramos</div>
+                        <div style="grid-column: 1 / -1;"><strong>Médico Radiólogo:</strong> Dr. Giann Kalef Ledezma Ramos</div>
                     </div>
 
                     <div class="pdf-section-title">1. Geometría Numérica del Escaneo</div>
@@ -376,8 +407,9 @@
             }
         }
         traces.push({ x: [solution[0]], y: [solution[1]], z: [solution[2]], mode: 'markers', marker: { size: 10, color: 'black', symbol: 'circle' }, type: 'scatter3d', name: 'Densidad Encontrada (x)' });
+        // Modificación sutil: agregada la etiqueta "responsive: true" al gráfico
         const layout = { title: '', margin: { l: 0, r: 0, b: 0, t: 0 }, scene: { xaxis: { title: 'x1' }, yaxis: { title: 'x2' }, zaxis: { title: 'x3' } } };
-        Plotly.newPlot('plot3d', traces, layout);
+        Plotly.newPlot('plot3d', traces, layout, {responsive: true});
     }
 
     function solve(method) {
